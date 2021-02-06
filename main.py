@@ -1,11 +1,5 @@
 from sudoku_loader import load_sudoku
 
-player_board = []
-solution_board = []
-
-dict_position_names = {}
-dict_characteristics = {}
-
 # three dimensional array
 # sudoku[2] represents the third row
 # sudoku[2][3][0] represents the fourth index of the third row
@@ -14,106 +8,83 @@ dict_characteristics = {}
 sudoku = load_sudoku()
 
 
-# if a cell has an input, set all its booleans to False
 def init():
     for i in range(len(sudoku)):
         for j in range(len(sudoku[i])):
+            # if a cell has an input...
             if sudoku[i][j][0] != 0:
-                for k in range(1, 10):
-                    sudoku[i][j][k] = False
+                for k in range(9):
+                    # ...set all its booleans to False
+                    sudoku[i][j][k + 1] = False
+                    # ...set the booleans for the input in the entire row to False
+                    sudoku[i][k][sudoku[i][j][0]] = False
+                    # ...set the booleans for the input in the entire column to False
+                    sudoku[k][j][sudoku[i][j][0]] = False
+                for k in range(3):
+                    for l in range(3):
+                        # ...set the booleans for the input in the entire box to False
+                        sudoku[i // 3 * 3 + k][j // 3 * 3 + l][sudoku[i][j][0]] = False
 
 
-def get_row(r):
-    row = []
+def solve():
+    # list all the booleans of...
     for i in range(9):
-        row.append(sudoku[r][i][0])
-    return row
+        for j in range(9):
+            # ...row i for any input j + 1, if there is only one True...
+            if (row_bool := [sudoku[i][k][j + 1] for k in range(9)]).count(True) == 1:
+                # ...set the input of row i, where the index is the index(True), to j + 1
+                sudoku[i][row_bool.index(True)][0] = j + 1
+                update(i, row_bool.index(True), j + 1)
+            # ...column i for any input j + 1, if there is only one True...
+            if (column_bool := [sudoku[k][i][j + 1] for k in range(9)]).count(True) == 1:
+                # ...set the input of column i, where the index is the index(True), to j + 1
+                sudoku[column_bool.index(True)][i][0] = j + 1
+                update(column_bool.index(True), i, j + 1)
+            # ...the box intersected by i and j for any input j + 1, if there is only one True...
+            if (box_bool := [sudoku[i // 3 * 3 + k][j // 3 * 3 + l][j + 1] for k in range(3) for l in range(3)]).count(True) == 1:
+                # ...determine the row and column, and set the input to j + 1
+                sudoku[i // 3 * 3 + box_bool.index(True) % 3][j // 3 * 3 + box_bool.index(True) // 3][0] = j + 1
+                update(i // 3 * 3 + box_bool.index(True) % 3, j // 3 * 3 + box_bool.index(True) // 3, j + 1)
+            # ...the cell intersected by i and j for any input j + 1, if there is only one True...
+            if (cell_bool := [sudoku[i][j][k] for k in range(1, 10)]).count(True) == 1:
+                # ...set the input of that cell to j + 1
+                sudoku[i][j][0] = cell_bool.index(True) + 1
+                update(i, j, cell_bool.index(True) + 1)
 
 
-def get_column(c):
-    column = []
+def update(i, j, value):
+    # whenever a new input for a cell is found...
+    for k in range(9):
+        # ...set all its booleans to False
+        sudoku[i][j][k + 1] = False
+        # ...set the booleans for the input in the entire row to False
+        sudoku[i][k][value] = False
+        # ...set the booleans for the input in the entire column to False
+        sudoku[k][j][value] = False
+    for k in range(3):
+        for l in range(3):
+            # ...set the booleans for the input in the entire box to False
+            sudoku[i // 3 * 3 + k][j // 3 * 3 + l][value] = False
+
+
+def get_unsolved():
+    num = 0
     for i in range(9):
-        column.append(sudoku[i][c][0])
-    return column
+        for j in range(9):
+            if sudoku[i][j][0] == 0:
+                num = num + 1
+    return num
 
 
-# get the entries of the box where the row and column intersect
-def get_box(row, column):
-    row_min = row // 3 * 3
-    column_min = column // 3 * 3
-    box = []
-    for i in range(3):
-        for j in range(3):
-            box.append(sudoku[row_min + i][column_min + j][0])
-    return box
+def print_grid():
+    for i in range(9):
+        for j in range(9):
+            print(sudoku[i][j][0], end="  ")
+        print()
 
 
-def create_starting_board():
-    for i in range(0, 9):
-        row = []
-        for k in range(0, 9):
-            row.append("0")
-        player_board.append(row)
-
-
-def create_dict_position_names():
-    for i in range(0, 81):
-        if i < 9:
-            dict_position_names["A" + str(i + 1)] = i
-        elif i > 8 and i < 18:
-            dict_position_names["B" + str(i - 8)] = i
-        elif i > 17 and i < 27:
-            dict_position_names["C" + str(i - 17)] = i
-        elif 26 < i < 36:
-            dict_position_names["D" + str(i - 26)] = i
-        elif 35 < i < 45:
-            dict_position_names["E" + str(i - 35)] = i
-        elif 44 < i < 54:
-            dict_position_names["F" + str(i - 44)] = i
-        elif 53 < i < 63:
-            dict_position_names["G" + str(i - 53)] = i
-        elif 62 < i < 72:
-            dict_position_names["H" + str(i - 62)] = i
-        elif i > 71:
-            dict_position_names["I" + str(i - 71)] = i
-
-
-def create_characteristics():
-    create_characteristics.i = 0
-    while create_characteristics.i != 9:
-        dict_characteristics[create_characteristics.i] = [add_position_column()]
-        create_characteristics.i = create_characteristics.i + 1
-
-
-def add_position_column():
-    if create_characteristics.i == 0 or 9 or 18 or 27 or 36 or 45 or 54 or 63 or 72:
-        return [player_board[0], player_board[9], player_board[18], player_board[27], player_board[36],
-                player_board[45], player_board[54], player_board[63], player_board[72]]
-
-
-"""
-def add_position_row():
-
-def add_position_grid():
-"""
-
-
-def show_board():
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print("-----------------------")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print("-----------------------")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-    print(" 2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 " + "| " + "2 " + "2 " + "2 ")
-
-
-# def choose_difficulty():
-
-
-# show_board()
-create_starting_board()
+init()
+# arbitrary range
+for _ in range(9):
+    solve()
+print_grid()
