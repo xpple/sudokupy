@@ -43,8 +43,8 @@ def solve():
             # ...the box intersected by i and j for any input j + 1, if there is only one True...
             if (box_bool := [sudoku[i // 3 * 3 + k][j // 3 * 3 + l][j + 1] for k in range(3) for l in range(3)]).count(True) == 1:
                 # ...determine the row and column, and set the input to j + 1
-                sudoku[i // 3 * 3 + box_bool.index(True) % 3][j // 3 * 3 + box_bool.index(True) // 3][0] = j + 1
-                update(i // 3 * 3 + box_bool.index(True) % 3, j // 3 * 3 + box_bool.index(True) // 3, j + 1)
+                sudoku[i // 3 * 3 + box_bool.index(True) // 3][j // 3 * 3 + box_bool.index(True) % 3][0] = j + 1
+                update(i // 3 * 3 + box_bool.index(True) // 3, j // 3 * 3 + box_bool.index(True) % 3, j + 1)
             # ...the cell intersected by i and j for any input j + 1, if there is only one True...
             if (cell_bool := [sudoku[i][j][k] for k in range(1, 10)]).count(True) == 1:
                 # ...set the input of that cell to j + 1
@@ -85,6 +85,14 @@ def print_grid():
 
 init()
 # arbitrary range
-for _ in range(9):
+for _ in range(30):
     solve()
+"""
+is_valid = lambda data: sum([a for a in map(lambda x: len(set(x)) == 9,
+                            data + [[a[i] for a in data] for i in
+                            range(9)] + [[data[x * 3 + dx][y * 3 + dy]
+                            for dx in range(3) for dy in range(3)]
+                            for x in range(3) for y in range(3)])]) == 27
+print(is_valid([[sudoku[i][j][0] for i in range(9)] for j in range(9)]))
+"""
 print_grid()
