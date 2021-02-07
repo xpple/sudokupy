@@ -1,4 +1,5 @@
 from sudoku_loader import load_sudoku
+import time
 
 # three dimensional array
 # sudoku[2] represents the third row
@@ -6,6 +7,7 @@ from sudoku_loader import load_sudoku
 # sudoku[2][3][n] represents whether the fourth index of the third row can contain the number n
 # so if sudoku[2][3][5] is False, the fourth index of the third row cannot contain a 5
 sudoku = load_sudoku()
+annotations = []
 
 
 def init():
@@ -35,6 +37,18 @@ def solve():
                 # ...set the input of row i, where the index is the index(True), to j + 1
                 sudoku[i][row_bool.index(True)][0] = j + 1
                 update(i, row_bool.index(True), j + 1)
+            # if there are two Trues...
+            elif row_bool.count(True) == 2:
+                # ...check if they are in the same box...
+                if (indices := [k for k, l in enumerate(row_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3:
+                    # and set the booleans for j + 1 in that box to False
+                    update_box(i, indices[0], j + 1, indices[1])
+            # if there are three Trues...
+            elif row_bool.count(True) == 3:
+                # ...check if they are in the same box...
+                if (indices := [k for k, l in enumerate(row_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3 == indices[2] // 3 * 3:
+                    # ...and set the booleans for j + 1 in that box to False
+                    update_box(i, indices[0], j + 1, indices[1])
             # ...column i for any input j + 1, if there is only one True...
             if (column_bool := [sudoku[k][i][j + 1] for k in range(9)]).count(True) == 1:
                 # ...set the input of column i, where the index is the index(True), to j + 1
@@ -68,12 +82,19 @@ def update(i, j, value):
             sudoku[i // 3 * 3 + k][j // 3 * 3 + l][value] = False
 
 
+def update_box(i, j, value, exception):
+    for k in range(3):
+        for l in range(3):
+            if (i // 3 * 3 + k != i and j // 3 * 3 + l != j) or (i // 3 * 3 + k != i and j // 3 * 3 + l != exception):
+                sudoku[i // 3 * 3 + k][j // 3 * 3 + l][value] = False
+
+
 def get_unsolved():
     num = 0
     for i in range(9):
         for j in range(9):
             if sudoku[i][j][0] == 0:
-                num = num + 1
+                num += 1
     return num
 
 
@@ -86,7 +107,7 @@ def print_grid():
 
 init()
 # arbitrary range
-for _ in range(30):
+for _ in range(10):
     solve()
 """
 is_valid = lambda data: sum([a for a in map(lambda x: len(set(x)) == 9,
@@ -96,4 +117,5 @@ is_valid = lambda data: sum([a for a in map(lambda x: len(set(x)) == 9,
                             for x in range(3) for y in range(3)])]) == 27
 print(is_valid([[sudoku[i][j][0] for i in range(9)] for j in range(9)]))
 """
+print(annotations)
 print_grid()
