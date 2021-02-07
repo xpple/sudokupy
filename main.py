@@ -53,6 +53,7 @@ def solve():
 
 
 def update(i, j, value):
+    print("Found", value, "at row", i + 1, "column", j + 1)
     # whenever a new input for a cell is found...
     for k in range(9):
         # ...set all its booleans to False
