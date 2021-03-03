@@ -41,19 +41,43 @@ def solve():
             elif row_bool.count(True) == 2:
                 # ...check if they are in the same box...
                 if (indices := [k for k, l in enumerate(row_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3:
-                    # and set the booleans for j + 1 in that box to False
-                    update_box(i, indices[0], j + 1, indices[1])
+                    # ...and set the booleans for j + 1 in that box to False
+                    for k in range(3):
+                        for l in range(3):
+                            if i // 3 * 3 + k != i:
+                                sudoku[i // 3 * 3 + k][row_bool.index(True) // 3 * 3 + l][j + 1] = False
             # if there are three Trues...
             elif row_bool.count(True) == 3:
                 # ...check if they are in the same box...
                 if (indices := [k for k, l in enumerate(row_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3 == indices[2] // 3 * 3:
                     # ...and set the booleans for j + 1 in that box to False
-                    update_box(i, indices[0], j + 1, indices[1])
+                    for k in range(3):
+                        for l in range(3):
+                            if i // 3 * 3 + k != i:
+                                sudoku[i // 3 * 3 + k][row_bool.index(True) + l][j + 1] = False
             # ...column i for any input j + 1, if there is only one True...
             if (column_bool := [sudoku[k][i][j + 1] for k in range(9)]).count(True) == 1:
                 # ...set the input of column i, where the index is the index(True), to j + 1
                 sudoku[column_bool.index(True)][i][0] = j + 1
                 update(column_bool.index(True), i, j + 1)
+            # if there are two Trues...
+            elif column_bool.count(True) == 2:
+                # ...check if they are in the same box...
+                if (indices := [k for k, l in enumerate(column_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3:
+                    # ...and set the booleans for j + 1 in that box to False
+                    for k in range(3):
+                        for l in range(3):
+                            if i // 3 * 3 + l != i:
+                                sudoku[column_bool.index(True) // 3 * 3 + k][i // 3 * 3 + l][j + 1] = False
+            # if there are three Trues...
+            elif column_bool.count(True) == 3:
+                # ...check if they are in the same box...
+                if (indices := [k for k, l in enumerate(column_bool) if l])[0] // 3 * 3 == indices[1] // 3 * 3 == indices[2] // 3 * 3:
+                    # ...and set the booleans for j + 1 in that box to False
+                    for k in range(3):
+                        for l in range(3):
+                            if i // 3 * 3 + l != i:
+                                sudoku[column_bool.index(True) + k][i // 3 * 3 + l][j + 1] = False
             # ...the box intersected by i and j for any input j + 1, if there is only one True...
             if (box_bool := [sudoku[i // 3 * 3 + k][j // 3 * 3 + l][j + 1] for k in range(3) for l in range(3)]).count(True) == 1:
                 # ...determine the row and column, and set the input to j + 1
@@ -80,13 +104,6 @@ def update(i, j, value):
         for l in range(3):
             # ...set the booleans for the input in the entire box to False
             sudoku[i // 3 * 3 + k][j // 3 * 3 + l][value] = False
-
-
-def update_box(i, j, value, exception):
-    for k in range(3):
-        for l in range(3):
-            if (i // 3 * 3 + k != i and j // 3 * 3 + l != j) or (i // 3 * 3 + k != i and j // 3 * 3 + l != exception):
-                sudoku[i // 3 * 3 + k][j // 3 * 3 + l][value] = False
 
 
 def get_unsolved():
