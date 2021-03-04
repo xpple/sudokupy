@@ -1,5 +1,4 @@
 from sudoku_loader import load_sudoku
-import time
 
 # three dimensional array
 # sudoku[2] represents the third row
@@ -7,7 +6,6 @@ import time
 # sudoku[2][3][n] represents whether the fourth index of the third row can contain the number n
 # so if sudoku[2][3][5] is False, the fourth index of the third row cannot contain a 5
 sudoku = load_sudoku()
-annotations = []
 
 
 def init():
@@ -83,6 +81,34 @@ def solve():
                 # ...determine the row and column, and set the input to j + 1
                 sudoku[i // 3 * 3 + box_bool.index(True) // 3][j // 3 * 3 + box_bool.index(True) % 3][0] = j + 1
                 update(i // 3 * 3 + box_bool.index(True) // 3, j // 3 * 3 + box_bool.index(True) % 3, j + 1)
+            # if there are two Trues...
+            elif box_bool.count(True) == 2:
+                # ...check if they are in the same row
+                if (indices := [k for k, l in enumerate(box_bool) if l])[0] // 3 == indices[1] // 3:
+                    # ...and set the booleans for j + 1 in that row to False
+                    for k in range(9):
+                        if j // 3 * 3 != k // 3 * 3:
+                            sudoku[i // 3 * 3 + box_bool.index(True) // 3][k][j + 1] = False
+                # ...check if they are in the same column
+                elif indices[0] % 3 == indices[1] % 3:
+                    # ...and set the booleans for j + 1 in that column to False
+                    for k in range(9):
+                        if i // 3 * 3 != k // 3 * 3:
+                            sudoku[k][j // 3 * 3 + box_bool.index(True) % 3][j + 1] = False
+            # if there are three Trues...
+            elif box_bool.count(True) == 3:
+                # ...check if they are in the same row
+                if (indices := [k for k, l in enumerate(box_bool) if l])[0] // 3 == indices[1] // 3 == indices[2] // 3:
+                    # ...and set the booleans for j + 1 in that row to False
+                    for k in range(9):
+                        if j // 3 * 3 != k // 3 * 3:
+                            sudoku[i // 3 * 3 + box_bool.index(True) // 3][k][j + 1] = False
+                # ...check if they are in the same column
+                elif indices[0] % 3 == indices[1] % 3 == indices[2] % 3:
+                    # ...and set the booleans for j + 1 in that column to False
+                    for k in range(9):
+                        if i // 3 * 3 != k // 3 * 3:
+                            sudoku[k][j // 3 * 3 + box_bool.index(True) % 3][j + 1] = False
             # ...the cell intersected by i and j for any input j + 1, if there is only one True...
             if (cell_bool := [sudoku[i][j][k] for k in range(1, 10)]).count(True) == 1:
                 # ...set the input of that cell to j + 1
@@ -126,13 +152,12 @@ init()
 # arbitrary range
 for _ in range(10):
     solve()
-"""
+
 is_valid = lambda data: sum([a for a in map(lambda x: len(set(x)) == 9,
                             data + [[a[i] for a in data] for i in
                             range(9)] + [[data[x * 3 + dx][y * 3 + dy]
                             for dx in range(3) for dy in range(3)]
                             for x in range(3) for y in range(3)])]) == 27
 print(is_valid([[sudoku[i][j][0] for i in range(9)] for j in range(9)]))
-"""
-print(annotations)
+
 print_grid()
