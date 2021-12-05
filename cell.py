@@ -6,6 +6,9 @@ class Cell:
         self.value = value
         self.booleans = [True] * 9 if value is None else [False] * 9
 
+    def __str__(self):
+        return self.value
+
     def set_value(self, value: int):
         self.value = value
         self.booleans = [False] * 9
